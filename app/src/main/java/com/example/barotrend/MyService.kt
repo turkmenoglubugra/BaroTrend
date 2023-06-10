@@ -31,7 +31,7 @@ class MyService : Service() {
             if (pressure != 0F) {
                 db?.addValue(pressure)
             }
-        }, 60000)
+        }, 3600000)
 
     }
 

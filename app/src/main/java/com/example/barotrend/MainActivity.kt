@@ -7,16 +7,20 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.SensorManager.getAltitude
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.barotrend.databinding.ActivityMainBinding
-import com.github.anastr.speedviewlib.SpeedView
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.formatter.IAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import java.math.RoundingMode
 
 
@@ -27,7 +31,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var pressureSensor: Sensor? = null
     lateinit var lineChart: LineChart
     private var db: DBHelper? = DBHelper(this, null)
-    private lateinit var speedometer: SpeedView
+    lateinit var pgsPressure: ProgressBar
+    lateinit var pgsAltitude: ProgressBar
+    lateinit var textViewPressure: TextView
+    lateinit var textViewAltitude: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +43,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         setSupportActionBar(binding.toolbar)
         startService(Intent(applicationContext, MyService::class.java))
 
-        speedometer = findViewById(R.id.speedView)
+        pgsPressure = findViewById(R.id.progressCirclePressure)
+        pgsAltitude = findViewById(R.id.progressCircleAltitude)
+        textViewPressure = findViewById(R.id.textViewPressure)
+        textViewAltitude = findViewById(R.id.textViewAltitude)
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
@@ -45,6 +55,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
 
         lineChart = findViewById(R.id.lineChart)
+        lineChart.setBackgroundColor(Color.BLACK)
         lineChart.setDrawGridBackground(false)
         lineChart.description.isEnabled = false
         lineChart.setTouchEnabled(false)
@@ -52,6 +63,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         lineChart.axisLeft.setDrawGridLines(false);
         lineChart.axisRight.setDrawGridLines(false);
         lineChart.xAxis.setDrawGridLines(false);
+        lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        lineChart.axisLeft.isEnabled = false
+        lineChart.axisRight.isEnabled = false
+        lineChart.legend.isEnabled = false;
 
         val dataSet = LineDataSet(getEntries(), "Line Data")
         dataSet.color = Color.GREEN
@@ -59,6 +74,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         dataSet.setDrawFilled(true)
         dataSet.fillColor = Color.GREEN
         dataSet.valueTextColor = Color.WHITE
+        dataSet.color = Color.GREEN
+        dataSet.highLightColor = Color.WHITE
+        dataSet.setCircleColor(Color.WHITE)
 
         val lineData = LineData(dataSet)
         lineChart.data = lineData
@@ -69,28 +87,27 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun getEntries(): List<Entry> {
         val cursor = db?.getValue()
         val list: ArrayList<Entry> = ArrayList()
+        val values: ArrayList<Float> = ArrayList()
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                var i: Float = 0F
                 do {
-                    if (i < 7F && cursor.getString(cursor.getColumnIndex(DBHelper.VALUE_COl))
+                    if (cursor.getString(cursor.getColumnIndex(DBHelper.VALUE_COl))
                             .toFloat() > 0F
                     ) {
-                        list.add(
-                            Entry(
-                                i,
-                                cursor.getString(cursor.getColumnIndex(DBHelper.VALUE_COl))
-                                    .toBigDecimal().setScale(2, RoundingMode.HALF_UP).toFloat()
-                            )
+                        values.add(
+                            cursor.getString(cursor.getColumnIndex(DBHelper.VALUE_COl))
+                                .toBigDecimal().setScale(2, RoundingMode.HALF_UP).toFloat()
                         )
-                        i += 1
                     }
-                    println(
-                        cursor.getString(cursor.getColumnIndex(DBHelper.ID_COL))
-                            .toString()+" : "+cursor.getString(cursor.getColumnIndex(DBHelper.VALUE_COl))
-                            .toString()
-                    )
                 } while (cursor.moveToNext())
+            }
+            for (i in values.size downTo 1) {
+                list.add(
+                    Entry(
+                        values.size - i.toFloat(),
+                        values[i - 1]
+                    )
+                )
             }
         }
         cursor?.close()
@@ -135,7 +152,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_PRESSURE) {
             MyService.pressure = event.values[0]
-            speedometer.speedTo(event.values[0])
+            pgsPressure.progress = event.values[0].toInt()
+            textViewPressure.text = String.format("%.1f", event.values[0])
+            pgsAltitude.progress =
+                getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, event.values[0]).toInt()
+            textViewAltitude.text = String.format(
+                "%.1f",
+                getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, event.values[0])
+            )
         }
     }
 }

@@ -1,32 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:ignore="MissingClass">
+    android:orientation="vertical">
 
-    <com.github.anastr.speedviewlib.SpeedView
-        android:id="@+id/speedView"
+    <GridLayout
+        android:id="@+id/GridLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:sv_minSpeed="100"
-        app:sv_maxSpeed="1050"
-        app:sv_unit="hPa"
-        app:sv_textColor="@color/white"
-        app:sv_speedTextColor="@color/white"
-        app:sv_unitTextColor="@color/white"
-        app:sv_withTremble="true"
-        app:layout_constraintBottom_toTopOf="@id/lineChart"
-        android:layout_margin="10dp"
-        tools:ignore="MissingConstraints"/>
+        android:columnCount="2"
+        android:orientation="horizontal"
+        android:rowCount="5">
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/lineChart"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="300dp"
-        app:layout_constraintTop_toBottomOf="@id/speedView"
-        android:text="@string/pressure"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/labelPressure"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="50dp"
+                android:minHeight="50dp"
+                android:text="Air Pressure"
+                android:textAlignment="center"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/labelALtitude"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="50dp"
+                android:minHeight="50dp"
+                android:text="Altitude"
+                android:textAlignment="center"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/textViewPressure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="@+id/progressCirclePressure"
+                app:layout_constraintEnd_toEndOf="@+id/progressCirclePressure"
+                app:layout_constraintStart_toStartOf="@+id/progressCirclePressure"
+                app:layout_constraintTop_toTopOf="@+id/progressCirclePressure" />
+
+            <ProgressBar
+                android:id="@+id/progressCirclePressure"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="false"
+                android:max="1050"
+                android:min="100"
+                android:minWidth="175dp"
+                android:minHeight="175dp"
+                android:progressDrawable="@drawable/circular"
+                android:secondaryProgress="100"
+                app:indicatorColor="#11FE35"
+                tools:ignore="MissingConstraints" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/textViewAltitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/progressCircleAltitude"
+                app:layout_constraintBottom_toBottomOf="@+id/progressCircleAltitude"
+                app:layout_constraintEnd_toEndOf="@+id/progressCircleAltitude"
+                app:layout_constraintStart_toStartOf="@+id/progressCircleAltitude"
+                app:layout_constraintTop_toTopOf="@+id/progressCircleAltitude" />
+
+            <ProgressBar
+                android:id="@+id/progressCircleAltitude"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="false"
+                android:max="10000"
+                android:min="0"
+                android:minWidth="175dp"
+                android:minHeight="175dp"
+                android:progressDrawable="@drawable/circular"
+                tools:ignore="MissingConstraints" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnSpan="2"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill">
+
+            <TextView
+                android:id="@+id/labelGrid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:minHeight="50dp"
+                android:text="Daily Graph"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                tools:ignore="MissingConstraints" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnSpan="2"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill">
+
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/lineChart"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:background="@color/white"
+                android:maxWidth="100dp"
+                android:minHeight="200dp"
+                android:text="@string/pressure"
+                tools:ignore="MissingConstraints" />
+        </LinearLayout>
+
+    </GridLayout>
+
+
+</LinearLayout>
