@@ -65,7 +65,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
 
         // below code returns a cursor to
         // read data from the database
-        return db.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY ID DESC LIMIT 6", null)
+        return db.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY ID DESC LIMIT 12", null)
 
     }
 

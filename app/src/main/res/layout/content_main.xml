@@ -5,6 +5,7 @@
     android:id="@+id/mainScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     android:orientation="vertical">
 
     <GridLayout
@@ -13,7 +14,7 @@
         android:layout_height="wrap_content"
         android:columnCount="2"
         android:orientation="horizontal"
-        android:rowCount="5">
+        android:rowCount="6">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -27,7 +28,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="50dp"
                 android:minHeight="50dp"
-                android:text="Air Pressure"
+                android:text="Air Pressure (hPa)"
                 android:textAlignment="center"
                 android:textColor="@color/white" />
         </LinearLayout>
@@ -44,7 +45,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="50dp"
                 android:minHeight="50dp"
-                android:text="Altitude"
+                android:text="Altitude (m)"
                 android:textAlignment="center"
                 android:textColor="@color/white" />
         </LinearLayout>
@@ -108,6 +109,101 @@
                 tools:ignore="MissingConstraints" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnSpan="2"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#033C8D" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/labelPressureChanges3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:minHeight="50dp"
+                android:text="3 Hours Pressure Change"
+                android:textAlignment="center"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/labelPressureChanges6"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:minHeight="50dp"
+                android:text="6 Hours Pressure Change"
+                android:textAlignment="center"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/txtPressureChanges3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:minHeight="50dp"
+                android:text="N/A %"
+                android:textAlignment="center"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnWeight="1">
+
+            <TextView
+                android:id="@+id/txtPressureChanges6"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:minHeight="50dp"
+                android:text="N/A %"
+                android:textAlignment="center"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_columnSpan="2"
+            android:layout_columnWeight="1"
+            android:layout_gravity="fill">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#033C8D" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -120,8 +216,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
+                android:layout_marginTop="20dp"
                 android:minHeight="50dp"
-                android:text="Daily Graph"
+                android:text="Last 6 Hours Pressure Chart (hPa)"
                 android:textAlignment="center"
                 android:textColor="@color/white"
                 tools:ignore="MissingConstraints" />
@@ -138,7 +235,6 @@
                 android:id="@+id/lineChart"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="10dp"
                 android:background="@color/white"
                 android:maxWidth="100dp"
                 android:minHeight="200dp"

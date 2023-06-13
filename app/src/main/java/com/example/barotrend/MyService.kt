@@ -4,7 +4,6 @@ import android.app.Service
 import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
-import android.widget.Toast
 
 class MyService : Service() {
 
@@ -12,9 +11,6 @@ class MyService : Service() {
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         onTaskRemoved(intent)
-        Toast.makeText(
-            applicationContext, "This is a Service running in Background", Toast.LENGTH_SHORT
-        ).show()
         return START_STICKY
     }
 
@@ -31,7 +27,7 @@ class MyService : Service() {
             if (pressure != 0F) {
                 db?.addValue(pressure)
             }
-        }, 3600000)
+        }, 1800000)
 
     }
 
