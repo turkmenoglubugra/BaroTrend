@@ -1,6 +1,7 @@
 package com.example.barotrend
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.hardware.Sensor
@@ -8,7 +9,10 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.SensorManager.getAltitude
+import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ProgressBar
@@ -47,11 +51,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
 
         if (pressureSensor == null) {
-            SweetAlertDialog(this@MainActivity, SweetAlertDialog.ERROR_TYPE)
-                .setTitleText("Oops...")
+            SweetAlertDialog(this@MainActivity, SweetAlertDialog.ERROR_TYPE).setTitleText("Oops...")
                 .setContentText("Barometer sensor not found!")
-                .setConfirmClickListener { this.finishAffinity() }
-                .show()
+                .setConfirmClickListener { this.finishAffinity() }.show()
         } else {
             startService(Intent(applicationContext, MyService::class.java))
 
@@ -76,7 +78,28 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             lineChart.axisRight.isEnabled = false
             lineChart.legend.isEnabled = false;
             refreshChart()
+            if (!isIgnoringBatteryOptimizations(this)) {
+                SweetAlertDialog(
+                    this, SweetAlertDialog.WARNING_TYPE
+                ).setTitleText("Battery Optimization")
+                    .setContentText("Battery optimization is active for this app. Close it?")
+                    .setCancelText("No").setConfirmText("Yes").showCancelButton(true)
+                    .setConfirmClickListener { checkBattery() }
+                    .setCancelClickListener { sDialog -> sDialog.cancel() }.show()
+            }
         }
+    }
+
+    private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+        val pwrm =
+            context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val name = context.applicationContext.packageName
+        return pwrm.isIgnoringBatteryOptimizations(name)
+    }
+
+    private fun checkBattery() {
+        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        startActivity(intent)
     }
 
     @SuppressLint("Range", "SetTextI18n")
@@ -197,10 +220,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         lineChart.invalidate()
 
         if (showPopUp) {
-            SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE)
-                .setTitleText("Succes!")
-                .setContentText("Chart refreshed successfully!")
-                .show()
+            SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE).setTitleText("Succes!")
+                .setContentText("Chart refreshed successfully!").show()
         }
         return true
     }
