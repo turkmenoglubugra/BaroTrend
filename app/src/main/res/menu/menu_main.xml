@@ -6,6 +6,11 @@
     <item
         android:id="@+id/refresh"
         android:orderInCategory="1"
-        android:title="Refresh"
+        android:title="Refresh Charts"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/batteryOptimization"
+        android:orderInCategory="2"
+        android:title="Check Battery Optimization"
         app:showAsAction="never" />
 </menu>

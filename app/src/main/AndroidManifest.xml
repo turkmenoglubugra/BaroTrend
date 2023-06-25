@@ -24,8 +24,12 @@
         </activity>
         <service
             android:name=".MyService"
-            android:exported="false"/>
+            android:exported="false" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8505902010480741~8342672955" />
     </application>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         tools:ignore="ManifestOrder" />
 </manifest>

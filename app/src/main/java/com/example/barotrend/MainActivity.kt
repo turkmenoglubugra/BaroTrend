@@ -9,7 +9,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.SensorManager.getAltitude
-import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
@@ -25,6 +24,9 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.gms.ads.*
+import com.google.android.gms.ads.initialization.InitializationStatus
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
 import java.math.RoundingMode
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -40,12 +42,18 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     lateinit var textViewAltitude: TextView
     lateinit var txtPressureChange3: TextView
     lateinit var txtPressureChange6: TextView
+    lateinit var mAdView: AdView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
+        MobileAds.initialize(this) {}
+
+        mAdView = findViewById(R.id.adView)
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         pressureSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
@@ -78,15 +86,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             lineChart.axisRight.isEnabled = false
             lineChart.legend.isEnabled = false;
             refreshChart()
-            if (!isIgnoringBatteryOptimizations(this)) {
-                SweetAlertDialog(
-                    this, SweetAlertDialog.WARNING_TYPE
-                ).setTitleText("Battery Optimization")
-                    .setContentText("Battery optimization is active for this app. Close it?")
-                    .setCancelText("No").setConfirmText("Yes").showCancelButton(true)
-                    .setConfirmClickListener { checkBattery() }
-                    .setCancelClickListener { sDialog -> sDialog.cancel() }.show()
-            }
+            checkBattery(false)
         }
     }
 
@@ -97,9 +97,25 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         return pwrm.isIgnoringBatteryOptimizations(name)
     }
 
-    private fun checkBattery() {
-        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-        startActivity(intent)
+    private fun checkBattery(alert: Boolean): Boolean {
+        if (!isIgnoringBatteryOptimizations(this)) {
+            SweetAlertDialog(
+                this, SweetAlertDialog.WARNING_TYPE
+            ).setTitleText("Battery Optimization")
+                .setContentText("Battery optimization is active. Close it?")
+                .setCancelText("No").setConfirmText("Yes").showCancelButton(true)
+                .setConfirmClickListener {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    startActivity(intent)
+                }
+                .setCancelClickListener { sDialog -> sDialog.cancel() }.show()
+        } else {
+            if (alert) {
+                SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE).setTitleText("Succes!")
+                    .setContentText("Battery optimization is inactive!").show()
+            }
+        }
+        return true
     }
 
     @SuppressLint("Range", "SetTextI18n")
@@ -164,6 +180,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             R.id.refresh -> {
                 refreshChart()
             }
+            R.id.batteryOptimization -> {
+                checkBattery(true)
+            }
             else -> super.onOptionsItemSelected(item)
         }
 
@@ -221,7 +240,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         if (showPopUp) {
             SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE).setTitleText("Succes!")
-                .setContentText("Chart refreshed successfully!").show()
+                .setContentText("Charts refreshed!").show()
         }
         return true
     }
