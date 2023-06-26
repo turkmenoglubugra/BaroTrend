@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             lineChart.axisLeft.isEnabled = false
             lineChart.axisRight.isEnabled = false
             lineChart.legend.isEnabled = false;
+            lineChart.xAxis.textColor = Color.WHITE
             refreshChart()
             checkBattery(false)
         }
