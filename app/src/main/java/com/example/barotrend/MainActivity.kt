@@ -14,20 +14,26 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.barotrend.databinding.ActivityMainBinding
+import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.AxisBase
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.google.android.gms.ads.*
-import com.google.android.gms.ads.initialization.InitializationStatus
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
+import com.github.mikephil.charting.formatter.ValueFormatter
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import java.math.RoundingMode
+
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -43,6 +49,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     lateinit var txtPressureChange3: TextView
     lateinit var txtPressureChange6: TextView
     lateinit var mAdView: AdView
+    lateinit var animation: Animation
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,23 +76,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             pgsAltitude = findViewById(R.id.progressCircleAltitude)
             textViewPressure = findViewById(R.id.textViewPressure)
             textViewAltitude = findViewById(R.id.textViewAltitude)
+
+            animation = AnimationUtils.loadAnimation(
+                applicationContext,
+                android.R.anim.fade_in
+            )
+            animation.duration = 2000
+
             txtPressureChange3 = findViewById(R.id.txtPressureChanges3)
             txtPressureChange6 = findViewById(R.id.txtPressureChanges6)
             lineChart = findViewById(R.id.lineChart)
-
             lineChart.setBackgroundColor(Color.BLACK)
             lineChart.setDrawGridBackground(false)
             lineChart.description.isEnabled = false
             lineChart.setTouchEnabled(false)
             lineChart.isDragEnabled = false
-            lineChart.axisLeft.setDrawGridLines(false);
-            lineChart.axisRight.setDrawGridLines(false);
-            lineChart.xAxis.setDrawGridLines(false);
+            lineChart.axisLeft.setDrawGridLines(false)
+            lineChart.axisRight.setDrawGridLines(false)
+            lineChart.xAxis.setDrawGridLines(false)
             lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
             lineChart.axisLeft.isEnabled = false
             lineChart.axisRight.isEnabled = false
-            lineChart.legend.isEnabled = false;
+            lineChart.legend.isEnabled = false
             lineChart.xAxis.textColor = Color.WHITE
+
+            animate()
             refreshChart()
             checkBattery(false)
         }
@@ -103,13 +118,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             SweetAlertDialog(
                 this, SweetAlertDialog.WARNING_TYPE
             ).setTitleText("Battery Optimization")
-                .setContentText("Battery optimization is active. Close it?")
-                .setCancelText("No").setConfirmText("Yes").showCancelButton(true)
-                .setConfirmClickListener {
+                .setContentText("Battery optimization is active. Close it?").setCancelText("No")
+                .setConfirmText("Yes").showCancelButton(true).setConfirmClickListener {
                     val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                     startActivity(intent)
-                }
-                .setCancelClickListener { sDialog -> sDialog.cancel() }.show()
+                }.setCancelClickListener { sDialog -> sDialog.cancel() }.show()
         } else {
             if (alert) {
                 SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE).setTitleText("Succes!")
@@ -120,9 +133,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     @SuppressLint("Range", "SetTextI18n")
-    private fun getEntries(): List<Entry> {
+    private fun getEntries(): ArrayList<BaroEntity> {
         val cursor = db?.getValue()
-        val list: ArrayList<Entry> = ArrayList()
+        val list: ArrayList<BaroEntity> = ArrayList()
         val values: ArrayList<Float> = ArrayList()
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -134,28 +147,29 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                             cursor.getString(cursor.getColumnIndex(DBHelper.VALUE_COl))
                                 .toBigDecimal().setScale(2, RoundingMode.HALF_UP).toFloat()
                         )
+                        list.add(
+                            BaroEntity(
+                                cursor.getString(cursor.getColumnIndex(DBHelper.DATETIME_COL))
+                                    .substring(5, 16),
+                                cursor.getString(cursor.getColumnIndex(DBHelper.VALUE_COl))
+                                    .toBigDecimal().setScale(2, RoundingMode.HALF_UP).toFloat()
+                            )
+                        )
                     }
                 } while (cursor.moveToNext())
             }
-            for (i in values.size downTo 1) {
-                list.add(
-                    Entry(
-                        values.size - i.toFloat(), values[i - 1]
-                    )
-                )
-            }
 
-            var change3 = (((values.get(6) - values.get(11)) / values.get(11)) * 100).toBigDecimal()
+            val change3 = (((values[0] - values[2]) / values[2]) * 100).toBigDecimal()
                 .setScale(3, RoundingMode.HALF_UP).toFloat()
-            txtPressureChange3.text = "$change3 %";
+            txtPressureChange3.text = "$change3 %"
             if (change3 < 0) {
                 txtPressureChange3.setTextColor(Color.RED)
             } else {
                 txtPressureChange3.setTextColor(Color.GREEN)
             }
-            var change6 = (((values.get(0) - values.get(11)) / values.get(11)) * 100).toBigDecimal()
+            val change6 = (((values[0] - values[5]) / values[5]) * 100).toBigDecimal()
                 .setScale(3, RoundingMode.HALF_UP).toFloat()
-            txtPressureChange6.text = "$change6 %";
+            txtPressureChange6.text = "$change6 %"
             if (change6 < 0) {
                 txtPressureChange6.setTextColor(Color.RED)
             } else {
@@ -168,15 +182,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.refresh -> {
                 refreshChart()
@@ -204,7 +214,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Do nothing
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -221,11 +230,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun refreshChart(): Boolean {
-        var showPopUp = false
-        if (lineChart.data != null) {
-            showPopUp = true
+        val list: ArrayList<Entry> = ArrayList()
+        val timeStamps: ArrayList<String> = ArrayList()
+        val entities: ArrayList<BaroEntity> = getEntries()
+
+        for (i in entities.size downTo 1) {
+            list.add(
+                Entry(
+                    entities.size - i.toFloat(), entities[i - 1].value
+                )
+            )
+            timeStamps.add(entities[i - 1].timestamp)
         }
-        val dataSet = LineDataSet(getEntries(), "Line Data")
+
+        val dataSet = LineDataSet(list, "Line Data")
         dataSet.color = Color.GREEN
         dataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
         dataSet.setDrawFilled(true)
@@ -234,15 +252,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         dataSet.color = Color.GREEN
         dataSet.highLightColor = Color.WHITE
         dataSet.setCircleColor(Color.WHITE)
+        dataSet.lineWidth = 1f
 
         val lineData = LineData(dataSet)
         lineChart.data = lineData
         lineChart.invalidate()
 
-        if (showPopUp) {
-            SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE).setTitleText("Succes!")
-                .setContentText("Charts refreshed!").show()
+        val formatter: ValueFormatter = object : ValueFormatter() {
+            override fun getAxisLabel(value: Float, axis: AxisBase): String {
+                return timeStamps[value.toInt()]
+            }
         }
+        val xAxis: XAxis = lineChart.xAxis
+        xAxis.granularity = 1f
+        xAxis.valueFormatter = formatter
+        xAxis.textSize = 1f
+
+        animate()
         return true
+    }
+
+    private fun animate() {
+        lineChart.animateX(2000, Easing.EaseInCubic)
+        pgsPressure.startAnimation(animation)
+        pgsAltitude.startAnimation(animation)
+        txtPressureChange3.startAnimation(animation)
+        txtPressureChange6.startAnimation(animation)
     }
 }
