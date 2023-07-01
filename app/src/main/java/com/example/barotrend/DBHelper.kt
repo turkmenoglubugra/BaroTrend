@@ -5,6 +5,9 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
     SQLiteOpenHelper(context, DATABASE_NAME, factory, DATABASE_VERSION) {
@@ -23,6 +26,11 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
     fun addValue(value: Float) {
         val values = ContentValues()
         values.put(VALUE_COl, value)
+        values.put(
+            DATETIME_COL,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+                .withZone(ZoneOffset.systemDefault()).format(Instant.now())
+        )
         val db = this.writableDatabase
         db.insert(TABLE_NAME, null, values)
         db.close()
@@ -35,7 +43,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
 
     companion object {
         private const val DATABASE_NAME = "BAROTREND"
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 7
         const val TABLE_NAME = "PRESSURE"
         const val ID_COL = "id"
         const val VALUE_COl = "value"

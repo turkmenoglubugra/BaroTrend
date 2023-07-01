@@ -78,8 +78,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             textViewAltitude = findViewById(R.id.textViewAltitude)
 
             animation = AnimationUtils.loadAnimation(
-                applicationContext,
-                android.R.anim.fade_in
+                applicationContext, android.R.anim.fade_in
             )
             animation.duration = 2000
 
@@ -158,22 +157,23 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     }
                 } while (cursor.moveToNext())
             }
-
-            val change3 = (((values[0] - values[2]) / values[2]) * 100).toBigDecimal()
-                .setScale(3, RoundingMode.HALF_UP).toFloat()
-            txtPressureChange3.text = "$change3 %"
-            if (change3 < 0) {
-                txtPressureChange3.setTextColor(Color.RED)
-            } else {
-                txtPressureChange3.setTextColor(Color.GREEN)
-            }
-            val change6 = (((values[0] - values[5]) / values[5]) * 100).toBigDecimal()
-                .setScale(3, RoundingMode.HALF_UP).toFloat()
-            txtPressureChange6.text = "$change6 %"
-            if (change6 < 0) {
-                txtPressureChange6.setTextColor(Color.RED)
-            } else {
-                txtPressureChange6.setTextColor(Color.GREEN)
+            if (values.size > 5) {
+                val change3 = (((values[0] - values[2]) / values[2]) * 100).toBigDecimal()
+                    .setScale(3, RoundingMode.HALF_UP).toFloat()
+                txtPressureChange3.text = "$change3 %"
+                if (change3 < 0) {
+                    txtPressureChange3.setTextColor(Color.RED)
+                } else {
+                    txtPressureChange3.setTextColor(Color.GREEN)
+                }
+                val change6 = (((values[0] - values[5]) / values[5]) * 100).toBigDecimal()
+                    .setScale(3, RoundingMode.HALF_UP).toFloat()
+                txtPressureChange6.text = "$change6 %"
+                if (change6 < 0) {
+                    txtPressureChange6.setTextColor(Color.RED)
+                } else {
+                    txtPressureChange6.setTextColor(Color.GREEN)
+                }
             }
         }
         cursor?.close()
@@ -193,6 +193,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
             R.id.batteryOptimization -> {
                 checkBattery(true)
+            }
+            R.id.instruction -> {
+                instruction()
             }
             else -> super.onOptionsItemSelected(item)
         }
@@ -260,7 +263,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         val formatter: ValueFormatter = object : ValueFormatter() {
             override fun getAxisLabel(value: Float, axis: AxisBase): String {
-                return timeStamps[value.toInt()]
+                return if (value > -1f && timeStamps.size > value) {
+                    timeStamps[value.toInt()]
+                } else {
+                    "N/A"
+                }
             }
         }
         val xAxis: XAxis = lineChart.xAxis
@@ -278,5 +285,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         pgsAltitude.startAnimation(animation)
         txtPressureChange3.startAnimation(animation)
         txtPressureChange6.startAnimation(animation)
+    }
+
+    private fun instruction(): Boolean {
+        SweetAlertDialog(this, SweetAlertDialog.NORMAL_TYPE).setTitleText("Instruction")
+            .setContentText("When exiting the application, exit with the main menu button so that it continues to run in the background.\nDo not close the application while clearing the memory!")
+            .show()
+        return true
     }
 }

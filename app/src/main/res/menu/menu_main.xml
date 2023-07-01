@@ -13,4 +13,9 @@
         android:orderInCategory="2"
         android:title="Check Battery Optimization"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/instruction"
+        android:orderInCategory="3"
+        android:title="Instructions"
+        app:showAsAction="never" />
 </menu>

@@ -4,6 +4,9 @@ import android.app.Service
 import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 class MyService : Service() {
 
@@ -20,15 +23,24 @@ class MyService : Service() {
 
     override fun onTaskRemoved(rootIntent: Intent) {
         Handler().postDelayed({
-            val restartServiceIntent = Intent(applicationContext, this.javaClass)
-            restartServiceIntent.setPackage(packageName)
-            startService(restartServiceIntent)
-            super.onTaskRemoved(rootIntent)
-            if (pressure != 0F) {
-                db?.addValue(pressure)
+            try {
+                val restartServiceIntent = Intent(applicationContext, this.javaClass)
+                restartServiceIntent.setPackage(packageName)
+                super.onTaskRemoved(rootIntent)
+                startService(restartServiceIntent)
+                if (pressure != 0F) {
+                    db?.addValue(pressure)
+                }
+                println(
+                    DateTimeFormatter
+                        .ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+                        .withZone(ZoneOffset.systemDefault())
+                        .format(Instant.now())
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }, 3600000)
-
     }
 
     companion object {
