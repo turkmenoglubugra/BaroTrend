@@ -31,12 +31,6 @@ class MyService : Service() {
                 if (pressure != 0F) {
                     db?.addValue(pressure)
                 }
-                println(
-                    DateTimeFormatter
-                        .ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
-                        .withZone(ZoneOffset.systemDefault())
-                        .format(Instant.now())
-                )
             } catch (e: Exception) {
                 e.printStackTrace()
             }
